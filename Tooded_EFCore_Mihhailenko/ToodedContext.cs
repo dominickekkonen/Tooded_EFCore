@@ -12,6 +12,9 @@ namespace Tooded_EFCore_Mihhailenko
     {
         public DbSet<Toode> Toodetabel { get; set; }
         public DbSet<Kategooria> Kategooriatabel { get; set; }
+        public DbSet<Kasutaja> Kasutajatabel => Set<Kasutaja>();
+        public DbSet<Tellimus> Tellimustabel => Set<Tellimus>();
+        public DbSet<TellimuseRida> Tellimusereatabel => Set<TellimuseRida>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -1,17 +1,30 @@
+using System;
+using System.Windows.Forms;
+
 namespace Tooded_EFCore_Mihhailenko
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form2());
+
+            // 1) Login / registration first. 2) The store opens only after a successful login.
+            // "Logi välja" in the store returns here and shows the login window again.
+            while (true)
+            {
+                using (var login = new LoginForm())
+                {
+                    if (login.ShowDialog() != DialogResult.OK || login.Kasutaja == null) break;
+
+                    using (var pood = new PoodForm(login.Kasutaja))
+                    {
+                        Application.Run(pood);
+                        if (!pood.LogiValja) break;
+                    }
+                }
+            }
         }
     }
 }

@@ -1,28 +1,19 @@
-﻿using System;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Tooded_EFCore_Mihhailenko
 {
     /// <summary>
-    /// SMTP settings for the sending mailbox. Fill these in before running.
-    /// Gmail: turn on 2-step verification, then create an "App password" (Google Account -> Security)
-    /// and put that 16-character password below. NEVER use your normal password here.
-    /// This file contains a secret, so add "PostiSeaded.cs" to .gitignore and do not commit it.
+    /// Builds the receipt (all items, prices and the total) and e-mails it to the buyer.
+    /// Needs the NuGet package "MailKit" (Package Manager Console: Install-Package MailKit).
     /// </summary>
-    internal static class PostiSeaded
-    {
-        public static readonly string Server = "smtp.gmail.com";
-        public static readonly int Port = 587;                          // STARTTLS
-        public static readonly string SmtpKasutaja = "SIIA-OMA-POOD@gmail.com";
-        public static readonly string Parool = "SIIA-RAKENDUSE-PAROOL";
-        public static readonly string SaatjaNimi = "Tooded pood";
-    }
-
-    /// <summary>Builds the receipt (all items, prices and the total) and e-mails it to the buyer.</summary>
     internal static class TsekiPost
     {
         private static readonly CultureInfo Et = new CultureInfo("et-EE");
@@ -40,39 +31,88 @@ namespace Tooded_EFCore_Mihhailenko
         /// <summary>Returns null when the e-mail was sent, otherwise a short error text.</summary>
         public static async Task<string?> SaadaAsync(Kasutaja ostja, Tellimus tellimus)
         {
-            if (PostiSeaded.SmtpKasutaja.StartsWith("SIIA", StringComparison.Ordinal) ||
-                PostiSeaded.Parool.StartsWith("SIIA", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(ostja.Epost))
             {
-                return "E-posti seaded on täitmata (vaata klassi PostiSeaded failis Tsekk.cs).";
+                return "Kasutajal " + ostja.Kasutajanimi + " puudub e-posti aadress.";
             }
 
+            // The sender's login is read from a settings file outside the project (see PostiSeaded.cs).
+            string seadeteViga;
+            if (!PostiSeaded.Lae(out seadeteViga))
+            {
+                return "Ostja aadress on olemas (" + ostja.Epost + "), aga saatja seaded ei ole valmis.\n" + seadeteViga;
+            }
+
+            MimeMessage kiri;
             try
             {
-                using (var smtp = new SmtpClient(PostiSeaded.Server, PostiSeaded.Port))
-                {
-                    smtp.EnableSsl = true;
-                    smtp.Credentials = new NetworkCredential(PostiSeaded.SmtpKasutaja, PostiSeaded.Parool);
-                    smtp.Timeout = 20000;
-
-                    using (var kiri = new MailMessage())
-                    {
-                        kiri.From = new MailAddress(PostiSeaded.SmtpKasutaja, PostiSeaded.SaatjaNimi, Encoding.UTF8);
-                        kiri.To.Add(new MailAddress(ostja.Epost, ostja.TaisNimi, Encoding.UTF8));
-                        kiri.Subject = "Tšekk nr " + tellimus.Id + " – Tooded pood";
-                        kiri.SubjectEncoding = Encoding.UTF8;
-                        kiri.BodyEncoding = Encoding.UTF8;
-                        kiri.IsBodyHtml = true;
-                        kiri.Body = EhitaHtml(ostja, tellimus);
-
-                        await smtp.SendMailAsync(kiri);
-                    }
-                }
-                return null;
+                kiri = new MimeMessage();
+                kiri.From.Add(new MailboxAddress(PostiSeaded.SaatjaNimi, PostiSeaded.SmtpKasutaja));
+                kiri.To.Add(new MailboxAddress(ostja.TaisNimi, ostja.Epost));
+                kiri.Subject = "Tšekk nr " + tellimus.Id + " – Tooded pood";
+                kiri.Body = new TextPart("html") { Text = EhitaHtml(ostja, tellimus) };
             }
             catch (Exception ex)
             {
-                return ex.GetBaseException().Message;
+                return "Kirja koostamine ebaõnnestus: " + ex.GetBaseException().Message;
             }
+
+            // First the configured port, then the other usual secure port of the same server.
+            var katsed = new List<(int port, SecureSocketOptions turva)>
+            {
+                (PostiSeaded.Port, PostiSeaded.Port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
+            };
+            if (PostiSeaded.Port == 587) katsed.Add((465, SecureSocketOptions.SslOnConnect));
+            else if (PostiSeaded.Port == 465) katsed.Add((587, SecureSocketOptions.StartTls));
+
+            var vead = new List<string>();
+
+            foreach (var (port, turva) in katsed)
+            {
+                try
+                {
+                    using (var klient = new SmtpClient())
+                    {
+                        klient.Timeout = 10000;
+                        await klient.ConnectAsync(PostiSeaded.Server, port, turva);
+                        await klient.AuthenticateAsync(PostiSeaded.SmtpKasutaja, PostiSeaded.Parool);
+                        await klient.SendAsync(kiri);
+                        await klient.DisconnectAsync(true);
+                    }
+                    return null;
+                }
+                catch (AuthenticationException ex)
+                {
+                    // Connected fine, but the server did not accept the login: no point trying another port.
+                    return "Saatja kontole sisselogimine ebaõnnestus (kontrolli Gmail-i aadressi ja rakenduse parooli " +
+                           "seadete failis):\n" + ex.Message;
+                }
+                catch (SmtpCommandException ex)
+                {
+                    // Connected and logged in, but the server refused the message (e.g. bad recipient address).
+                    return "Meiliserver keeldus kirja vastu võtmast (" + ex.StatusCode + "):\n" + ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    string tekst = ex.GetBaseException().Message;
+
+                    // Google answers a wrong login with "5.7.8 Username and Password not accepted" (MailKit sometimes
+                    // reports it as a "disconnected" error). That is a login problem, not a network problem.
+                    if (tekst.Contains("5.7.8") || tekst.Contains("BadCredentials") ||
+                        tekst.Contains("Username and Password not accepted"))
+                    {
+                        return "Google ei võtnud saatja sisselogimist vastu (aadress või parool on vale).\n" +
+                               "Kontrolli seadete failis Gmail-i aadressi ja 16-kohalist rakenduse parooli " +
+                               "(mitte tavalist parooli).\nFail: " + PostiSeaded.Fail + "\n\n" + tekst;
+                    }
+
+                    vead.Add("port " + port + ": " + tekst);
+                }
+            }
+
+            return "Ühendus meiliserveriga " + PostiSeaded.Server + " ebaõnnestus.\n" +
+                   string.Join("\n", vead) +
+                   "\n\nKui kooli võrk blokeerib e-posti, proovi kodus või telefoni mobiilse leviala kaudu.";
         }
 
         private static string EhitaHtml(Kasutaja ostja, Tellimus tellimus)

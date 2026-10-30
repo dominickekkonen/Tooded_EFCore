@@ -36,9 +36,6 @@ namespace Tooded_EFCore_Mihhailenko
         {
             Ehita();
         }
-
-        // ------------------------------------------------------------ layout
-
         private void Ehita()
         {
             Text = "Tooded pood";

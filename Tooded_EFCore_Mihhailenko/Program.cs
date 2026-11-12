@@ -24,7 +24,25 @@ namespace ToodedEFCore
                 return;
             }
 
-            Application.Run(new LoginForm());
+            while (true)
+            {
+                using var login = new LoginForm();
+
+                if (login.ShowDialog() != DialogResult.OK ||
+                    login.Kasutaja == null)
+                {
+                    return;
+                }
+
+                using var pood = new PoodForm(login.Kasutaja);
+                Application.Run(pood);
+
+                // Return to login only when "Logi välja" was clicked.
+                if (!pood.LogiValja)
+                {
+                    return;
+                }
+            }
         }
     }
 }

@@ -14,6 +14,15 @@ namespace Tooded_EFCore_Mihhailenko
         public Form2()
         {
             InitializeComponent();
+            var btnLisaKategooria = new Button
+            {
+                Text = "Lisa kategooria",
+                Location = new Point(12, 330),
+                Size = new Size(170, 35)
+            };
+
+            btnLisaKategooria.Click += btnLisaKategooria_Click;
+            Controls.Add(btnLisaKategooria);
             _db = new ToodedContext();
             LaeKategooriad();
             LaeTooted();
@@ -112,8 +121,8 @@ namespace Tooded_EFCore_Mihhailenko
             };
 
             // 5. Copy the picture into the Images folder
-            Directory.CreateDirectory("Images");
-            string siht = Path.Combine("Images", uus.Pilt);
+            Directory.CreateDirectory(PildiAbi.Kaust);
+            string siht = Path.Combine(PildiAbi.Kaust, uus.Pilt);
             if (!string.Equals(Path.GetFullPath(valitudPilt), Path.GetFullPath(siht),
                     StringComparison.OrdinalIgnoreCase))
             {
@@ -131,7 +140,55 @@ namespace Tooded_EFCore_Mihhailenko
             picturePilt.Image = null;
             valitudPilt = "";
         }
+        private void btnLisaKategooria_Click(object? sender, EventArgs e)
+        {
+            string nimetus = Microsoft.VisualBasic.Interaction.InputBox(
+                "Sisesta uue kategooria nimi:",
+                "Lisa kategooria").Trim();
 
+            // Cancel or empty input: save nothing.
+            if (string.IsNullOrWhiteSpace(nimetus))
+                return;
+
+            if (nimetus.Length > 100)
+            {
+                MessageBox.Show(
+                    "Kategooria nimi võib olla kuni 100 tähemärki.");
+                return;
+            }
+
+            try
+            {
+                using var db = new ToodedContext();
+
+                if (db.Kategooriatabel.Any(
+                    k => k.Kategooria_nimetus == nimetus))
+                {
+                    MessageBox.Show("Selline kategooria on juba olemas.");
+                    return;
+                }
+
+                var kategooria = new Kategooria
+                {
+                    Kategooria_nimetus = nimetus,
+                    Kirjeldus = ""
+                };
+
+                db.Kategooriatabel.Add(kategooria);
+                db.SaveChanges();
+
+                LaeKategooriad();
+                comboKategooria.SelectedValue = kategooria.Id;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Kategooria lisamine ebaõnnestus.\n" + ex.Message,
+                    "Viga",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
         private void dataGridViewTooted_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -142,8 +199,8 @@ namespace Tooded_EFCore_Mihhailenko
 
             string pilt = dataGridViewTooted.Rows[e.RowIndex].Cells["Pilt"].Value?.ToString();
 
-            if (!string.IsNullOrEmpty(pilt) && File.Exists(Path.Combine("Images", pilt)))
-                picturePilt.Image = Image.FromFile(Path.Combine("Images", pilt));
+            if (!string.IsNullOrEmpty(pilt) && File.Exists(Path.Combine(PildiAbi.Kaust, pilt)))
+                picturePilt.Image = Image.FromFile(Path.Combine(PildiAbi.Kaust, pilt));
         }
 
         private void btnUuenda_Click(object sender, EventArgs e)
@@ -192,8 +249,8 @@ namespace Tooded_EFCore_Mihhailenko
             if (!string.IsNullOrEmpty(valitudPilt))
             {
                 toode.Pilt = Path.GetFileName(valitudPilt);
-                Directory.CreateDirectory("Images");
-                string siht = Path.Combine("Images", toode.Pilt);
+                Directory.CreateDirectory(PildiAbi.Kaust);
+                string siht = Path.Combine(PildiAbi.Kaust, toode.Pilt);
                 if (!string.Equals(Path.GetFullPath(valitudPilt), Path.GetFullPath(siht),
                         StringComparison.OrdinalIgnoreCase))
                 {

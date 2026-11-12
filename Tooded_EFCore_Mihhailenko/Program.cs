@@ -1,7 +1,6 @@
-using System;
-using System.Windows.Forms;
+using Tooded_EFCore_Mihhailenko;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace ToodedEFCore
 {
     internal static class Program
     {
@@ -10,21 +9,22 @@ namespace Tooded_EFCore_Mihhailenko
         {
             ApplicationConfiguration.Initialize();
 
-            // 1) Login / registration first. 2) The store opens only after a successful login.
-            // "Logi välja" in the store returns here and shows the login window again.
-            while (true)
+            try
             {
-                using (var login = new LoginForm())
-                {
-                    if (login.ShowDialog() != DialogResult.OK || login.Kasutaja == null) break;
-
-                    using (var pood = new PoodForm(login.Kasutaja))
-                    {
-                        Application.Run(pood);
-                        if (!pood.LogiValja) break;
-                    }
-                }
+                DatabaseSetup.Initialize();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Andmebaasi seadistamine ebaõnnestus.\n" + ex.Message,
+                    "Andmebaasi viga",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            Application.Run(new LoginForm());
         }
     }
 }

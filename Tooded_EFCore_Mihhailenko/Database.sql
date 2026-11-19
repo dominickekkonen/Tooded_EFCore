@@ -1,5 +1,4 @@
-﻿-- Recreates the whole Tooded_DB database. Safe to run more than once (nothing is deleted or duplicated).
--- Run it while connected to the server itself (e.g. (localdb)\MSSQLLocalDB), not inside another database.
+﻿-- Recreates the whole Tooded_DB database
 
 IF DB_ID(N'Tooded_DB') IS NULL
     CREATE DATABASE Tooded_DB;

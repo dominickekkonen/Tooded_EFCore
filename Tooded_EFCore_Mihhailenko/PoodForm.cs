@@ -417,99 +417,21 @@ namespace Tooded_EFCore_Mihhailenko
 
         // Saves the order in the database and reduces the stock (one transaction),
         // then e-mails the receipt to the logged-in user.
-        private async Task Maksa()
+        private Task Maksa()
         {
-            if (_korv.Count == 0) return;
+            if (_korv.Count == 0)
+                return Task.CompletedTask;
 
-            Tellimus? valmis = null;
+            using var arve = new ArveForm(
+                _kasutaja, _korv, _tooted);
 
-            try
-            {
-                using (var db = new ToodedContext())
-                using (var tx = db.Database.BeginTransaction())
-                {
-                    var idd = _korv.Keys.ToList();
-                    var tooted = db.Toodetabel.Where(t => idd.Contains(t.Id)).ToList();
+            arve.ShowDialog(this);
 
-                    // Re-check the stock in the database (someone else may have bought it in the meantime).
-                    var probleemid = new List<string>();
-                    foreach (var paar in _korv)
-                    {
-                        var t = tooted.FirstOrDefault(x => x.Id == paar.Key);
-                        if (t == null) probleemid.Add("Toode on kustutatud.");
-                        else if (t.Kogus < paar.Value)
-                            probleemid.Add(t.Toodenimetus + ": laos " + t.Kogus + " tk, korvis " + paar.Value + " tk");
-                    }
-
-                    if (probleemid.Count > 0)
-                    {
-                        MessageBox.Show("Kõike ei saa osta, laoseis on muutunud:\n\n" + string.Join("\n", probleemid),
-                            "Laoseis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        LaeAndmed();
-                        JoonistaToted();
-                        JoonistaKorv();
-                        return;
-                    }
-
-                    var tellimus = new Tellimus { KasutajaId = _kasutaja.Id, Aeg = DateTime.Now };
-                    decimal summa = 0;
-
-                    foreach (var paar in _korv)
-                    {
-                        var t = tooted.First(x => x.Id == paar.Key);
-                        t.Kogus -= paar.Value;
-                        summa += t.Hind * paar.Value;
-                        tellimus.Read.Add(new TellimuseRida
-                        {
-                            ToodeId = t.Id,
-                            ToodeNimi = t.Toodenimetus,
-                            Kogus = paar.Value,
-                            Hind = t.Hind
-                        });
-                    }
-
-                    tellimus.Summa = summa;
-                    db.Tellimustabel.Add(tellimus);
-                    db.SaveChanges();
-                    tx.Commit();
-
-                    valmis = tellimus;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ostu ei õnnestunud salvestada:\n" + ex.GetBaseException().Message, "Viga",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (valmis == null) return;
-
-            // The order is saved. Refresh the shop, then send the receipt.
-            _korv.Clear();
             LaeAndmed();
             JoonistaToted();
             JoonistaKorv();
 
-            string sonum = "Aitäh! Tellimus nr " + valmis.Id + " on salvestatud.\nKokku: " +
-                           valmis.Summa.ToString("0.00") + " €";
-
-            Enabled = false;
-            UseWaitCursor = true;
-            string? viga = await TsekiPost.SaadaAsync(_kasutaja, valmis);
-            UseWaitCursor = false;
-            Enabled = true;
-
-            if (viga == null)
-            {
-                MessageBox.Show(sonum + "\n\nTšekk saadeti aadressile " + _kasutaja.Epost + ".",
-                    "Ost sooritatud", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show(sonum + "\n\nTšekki ei õnnestunud saata:\n" + viga,
-                    "Ost sooritatud", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            return Task.CompletedTask;
         }
     }
 }

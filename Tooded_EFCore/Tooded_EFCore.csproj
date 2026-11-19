@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Tooded_EFCore</RootNamespace>
+    <AssemblyName>Tooded_EFCore</AssemblyName>
+    <StartupObject>Tooded_EFCore.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     public partial class Form3 : Form
     {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     /// <summary>The shape of the settings file postiseaded.json.</summary>
     internal sealed class PostiAndmed

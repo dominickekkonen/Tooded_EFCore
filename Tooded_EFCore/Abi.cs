@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Windows.Forms;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     /// <summary>Colours, fonts and small styling helpers. Change the colours here to re-theme the whole shop.</summary>
     internal static class Teema

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.Mail;
 
-namespace Tooded_EFCore_Mihhailenko;
+namespace Tooded_EFCore;
 
 public class ArveForm : Form
 {

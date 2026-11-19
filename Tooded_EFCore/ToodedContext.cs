@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     public class ToodedContext : DbContext
     {

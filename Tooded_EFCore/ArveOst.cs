@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Tooded_EFCore_Mihhailenko;
+namespace Tooded_EFCore;
 
 public static class ArveOst
 {

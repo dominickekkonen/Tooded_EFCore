@@ -1,6 +1,6 @@
-using Tooded_EFCore_Mihhailenko;
+using Tooded_EFCore;
 
-namespace ToodedEFCore
+namespace Tooded_EFCore
 {
     internal static class Program
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     /// <summary>
     /// The store: category list on the left, product cards in the middle, basket on the right.

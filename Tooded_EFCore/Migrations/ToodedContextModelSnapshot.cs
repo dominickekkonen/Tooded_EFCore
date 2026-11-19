@@ -2,20 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Tooded_EFCore_Mihhailenko;
+using Tooded_EFCore;
 
 #nullable disable
 
-namespace Tooded_EFCore_Mihhailenko.Migrations
+namespace Tooded_EFCore.Migrations
 {
     [DbContext(typeof(ToodedContext))]
-    [Migration("20261016054437_InitialCreate")]
-    partial class InitialCreate
+    partial class ToodedContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,7 +21,7 @@ namespace Tooded_EFCore_Mihhailenko.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Tooded_EFCore_Mihhailenko.Kategooria", b =>
+            modelBuilder.Entity("Tooded_EFCore.Kategooria", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -45,7 +42,7 @@ namespace Tooded_EFCore_Mihhailenko.Migrations
                     b.ToTable("Kategooriatabel", (string)null);
                 });
 
-            modelBuilder.Entity("Tooded_EFCore_Mihhailenko.Toode", b =>
+            modelBuilder.Entity("Tooded_EFCore.Toode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -77,9 +74,9 @@ namespace Tooded_EFCore_Mihhailenko.Migrations
                     b.ToTable("Toodetabel", (string)null);
                 });
 
-            modelBuilder.Entity("Tooded_EFCore_Mihhailenko.Toode", b =>
+            modelBuilder.Entity("Tooded_EFCore.Toode", b =>
                 {
-                    b.HasOne("Tooded_EFCore_Mihhailenko.Kategooria", "Kategooria")
+                    b.HasOne("Tooded_EFCore.Kategooria", "Kategooria")
                         .WithMany("Tooded")
                         .HasForeignKey("KategooriaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -88,7 +85,7 @@ namespace Tooded_EFCore_Mihhailenko.Migrations
                     b.Navigation("Kategooria");
                 });
 
-            modelBuilder.Entity("Tooded_EFCore_Mihhailenko.Kategooria", b =>
+            modelBuilder.Entity("Tooded_EFCore.Kategooria", b =>
                 {
                     b.Navigation("Tooded");
                 });

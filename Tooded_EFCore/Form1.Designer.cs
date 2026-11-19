@@ -1,4 +1,4 @@
-﻿namespace Tooded_EFCore_Mihhailenko
+﻿namespace Tooded_EFCore
 {
     partial class Form1
     {

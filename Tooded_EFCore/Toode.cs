@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     public class Toode
     {

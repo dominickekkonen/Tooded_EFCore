@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace Tooded_EFCore_Mihhailenko
+namespace Tooded_EFCore
 {
     /// <summary>
     /// Login + registration in one window, shown before the store opens.

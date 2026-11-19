@@ -3,7 +3,7 @@ using PdfSharpCore.Fonts;
 using PdfSharpCore.Pdf;
 using System.Drawing;
 
-namespace Tooded_EFCore_Mihhailenko;
+namespace Tooded_EFCore;
 
 public static class ArvePdf
 {

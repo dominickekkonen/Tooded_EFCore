@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Text.RegularExpressions;
 
-namespace ToodedEFCore
+namespace Tooded_EFCore
 {
     internal static class DatabaseSetup
     {

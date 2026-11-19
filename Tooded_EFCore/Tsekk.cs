@@ -1,7 +1,7 @@
 ﻿using MailKit.Security;
 using MimeKit;
 
-namespace Tooded_EFCore_Mihhailenko;
+namespace Tooded_EFCore;
 internal static class TsekiPost
 {
     public static async Task<string?> SaadaAsync(
@@ -29,7 +29,7 @@ internal static class TsekiPost
                 PostiSeaded.SmtpKasutaja,
                 PostiSeaded.SaatjaNimi);
 
-            using var klient = new SmtpClient
+            using var klient = new MailKit.Net.Smtp.SmtpClient
             {
                 Timeout = 15000
             };
@@ -45,7 +45,7 @@ internal static class TsekiPost
                 PostiSeaded.SmtpKasutaja,
                 PostiSeaded.Parool);
 
-            await klient.SendAsync(kiri);
+            await klient.SendAsync(new MailKit.SendRequest(kiri));
             await klient.DisconnectAsync(true);
 
             return null;
@@ -75,7 +75,10 @@ internal static class TsekiPost
 
         var sisu = new BodyBuilder
         {
-            HtmlBody = EhitaHtml(ostja, tellimus)
+            TextBody =
+                $"Tere, {ostja.TaisNimi}!\n\n" +
+                $"Arve nr {tellimus.Id} on PDF-manuses.\n" +
+                $"Kokku: {tellimus.Summa:F2} €."
         };
 
         sisu.Attachments.Add(

@@ -84,7 +84,7 @@ namespace Tooded_EFCore
             };
             kasutajaPaneel.Controls.Add(tere);
 
-            if (_kasutaja.Roll == "Omanik")
+            if (AktiivneKasutaja.OnAdmin)
             {
                 var haldus = new Button { Text = "Haldus", Size = new Size(90, 36), Margin = new Padding(0, 0, 8, 0) };
                 Teema.NupuStiil(haldus, false);
@@ -191,6 +191,9 @@ namespace Tooded_EFCore
 
         private void HaldusKlikk(object? sender, EventArgs e)
         {
+            if (!AktiivneKasutaja.OnAdmin)
+                return;
+
             using (var vorm = new Form2())
             {
                 vorm.ShowDialog(this);

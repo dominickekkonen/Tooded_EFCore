@@ -1,5 +1,3 @@
-using Tooded_EFCore;
-
 namespace Tooded_EFCore
 {
     internal static class Program
@@ -12,11 +10,15 @@ namespace Tooded_EFCore
             try
             {
                 DatabaseSetup.Initialize();
+
+                using var db = new ToodedContext();
+                KasutajaOigused.LooAdmin(db);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Andmebaasi seadistamine ebaõnnestus.\n" + ex.Message,
+                    "Andmebaasi seadistamine ebaõnnestus.\n" +
+                    ex.GetBaseException().Message,
                     "Andmebaasi viga",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -34,14 +36,15 @@ namespace Tooded_EFCore
                     return;
                 }
 
+                AktiivneKasutaja.LogiSisse(login.Kasutaja);
+
                 using var pood = new PoodForm(login.Kasutaja);
                 Application.Run(pood);
 
-                // Return to login only when "Logi välja" was clicked.
+                AktiivneKasutaja.LogiValja();
+
                 if (!pood.LogiValja)
-                {
                     return;
-                }
             }
         }
     }

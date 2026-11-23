@@ -24,6 +24,13 @@ namespace Tooded_EFCore
             btnLisaKategooria.Click += btnLisaKategooria_Click;
             Controls.Add(btnLisaKategooria);
             _db = new ToodedContext();
+
+            if (!KontrolliOigusi())
+            {
+                Shown += (s, e) => Close();
+                return;
+            }
+
             LaeKategooriad();
             LaeTooted();
         }
@@ -53,6 +60,7 @@ namespace Tooded_EFCore
 
         private void btnValiPilt_Click(object sender, EventArgs e)
         {
+            if (!KontrolliOigusi()) return;
             using var ofd = new OpenFileDialog();
             ofd.Filter = "Pildid|*.jpg;*.png;*.jpeg";
 
@@ -65,6 +73,7 @@ namespace Tooded_EFCore
 
         private void btnLisa_Click(object sender, EventArgs e)
         {
+            if (!KontrolliOigusi()) return;
             // 1. Check that nothing is empty
             if (string.IsNullOrWhiteSpace(txtNimetus.Text) ||
                 string.IsNullOrWhiteSpace(txtKogus.Text) ||
@@ -142,6 +151,8 @@ namespace Tooded_EFCore
         }
         private void btnLisaKategooria_Click(object? sender, EventArgs e)
         {
+            if (!KontrolliOigusi()) return;
+
             string nimetus = Microsoft.VisualBasic.Interaction.InputBox(
                 "Sisesta uue kategooria nimi:",
                 "Lisa kategooria").Trim();
@@ -202,9 +213,21 @@ namespace Tooded_EFCore
             if (!string.IsNullOrEmpty(pilt) && File.Exists(Path.Combine(PildiAbi.Kaust, pilt)))
                 picturePilt.Image = Image.FromFile(Path.Combine(PildiAbi.Kaust, pilt));
         }
+        private bool KontrolliOigusi()
+        {
+            if (AktiivneKasutaja.OnAdmin)
+                return true;
 
+            MessageBox.Show(
+                "Toodete haldus on ainult administraatorile.",
+                "Ligip‰‰s keelatud");
+
+            return false;
+        }
         private void btnUuenda_Click(object sender, EventArgs e)
         {
+            if (!KontrolliOigusi()) return;
+
             if (dataGridViewTooted.SelectedRows.Count == 0)
             {
                 MessageBox.Show("Vali tabelist toode, mida uuendada.",
@@ -265,6 +288,7 @@ namespace Tooded_EFCore
 
         private void btnKustuta_Click(object sender, EventArgs e)
         {
+            if (!KontrolliOigusi()) return;
             int id = (int)dataGridViewTooted.SelectedRows[0].Cells["Id"].Value;
 
             var toode = _db.Toodetabel.Find(id);

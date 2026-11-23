@@ -14,7 +14,7 @@ namespace Tooded_EFCore
         public string Kasutajanimi { get; set; } = "";
         public string ParoolHash { get; set; } = "";
         public string Sool { get; set; } = "";
-        public string Roll { get; set; } = "Müüja";
+        public string Roll { get; set; } = "kasutaja";
         public DateTime Loodud { get; set; } = DateTime.Now;
 
         [NotMapped]

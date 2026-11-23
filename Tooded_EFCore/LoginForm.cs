@@ -240,6 +240,11 @@ namespace Tooded_EFCore
                 _rViga.Text = "Paroolid ei kattu.";
                 return;
             }
+            if (string.Equals(nimi,"admin",StringComparison.OrdinalIgnoreCase))
+            {
+                _rViga.Text = "Kasutajanimi admin on reserveeritud.";
+                return;
+            }
 
             try
             {
@@ -251,8 +256,6 @@ namespace Tooded_EFCore
                         _rViga.Text = "See kasutajanimi on juba kasutusel.";
                         return;
                     }
-
-                    bool esimene = !db.Kasutajatabel.Any();
 
                     string hash;
                     string sool;
@@ -266,7 +269,7 @@ namespace Tooded_EFCore
                         Kasutajanimi = nimi,
                         ParoolHash = hash,
                         Sool = sool,
-                        Roll = esimene ? "Omanik" : "Müüja",
+                        Roll = "kasutaja",
                         Loodud = DateTime.Now
                     };
                     db.Kasutajatabel.Add(uus);

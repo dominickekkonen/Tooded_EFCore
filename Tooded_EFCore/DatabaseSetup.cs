@@ -7,18 +7,26 @@ namespace Tooded_EFCore
     {
         public static void Initialize()
         {
+            using var connection = new SqlConnection(
+                @"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;Connect Timeout=30;");
+
+            connection.Open();
+
+            // Use the existing database when it is already present.
+            using (var check = connection.CreateCommand())
+            {
+                check.CommandText = "SELECT DB_ID(N'Tooded_DB');";
+
+                if (check.ExecuteScalar() is int)
+                    return;
+            }
+
+            // Create the database from the script on first startup.
             string path = Path.Combine(
                 AppContext.BaseDirectory, "Database.sql");
 
             string sql = File.ReadAllText(path);
 
-            // Connect to master because Tooded_DB might not exist yet.
-            using var connection = new SqlConnection(
-                @"Server=(localdb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;Connect Timeout=30;");
-
-            connection.Open(); // Starts the installed LocalDB instance.
-
-            // SqlCommand cannot execute GO, so run each SQL block separately.
             foreach (string batch in Regex.Split(
                 sql,
                 @"^\s*GO\s*$",
